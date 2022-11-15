@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -7,12 +7,27 @@ import {
     TextInput,
     StyleSheet
 } from 'react-native'
+import { api } from '../../services/api'
+import { useNavigation } from '@react-navigation/native'
 
-import { AuthContext } from '../../contexts/AuthContext'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { StackParamList } from '../../routes/app.routes'
+
 
 export default function Dashboard() {
 
-    const { signOut } = useContext(AuthContext);
+    const navigation = useNavigation<NativeStackNavigationProp<StackParamList>>();
+
+    const [table, setTable] = useState('');
+
+    async function openOrder() {
+        if (table === '') return;
+
+        navigation.navigate('Order', {
+            table: table,
+            orderId: "be7fff1f-ff32-46cf-a6ac-cb15af8a7764"
+        });
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -21,10 +36,12 @@ export default function Dashboard() {
                 style={styles.input}
                 placeholder="Número da mesa"
                 keyboardType='numeric'
-            // value={email}
-            // onChangeText={setEmail}
+                value={table}
+                onChangeText={setTable}
             />
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button}
+                onPress={openOrder}
+            >
                 <Text style={styles.buttonText}>Abrir mesa</Text>
             </TouchableOpacity>
         </SafeAreaView>
