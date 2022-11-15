@@ -59,7 +59,7 @@ export default function Dashboard() {
             <TouchableOpacity style={styles.logoutLabel}
                 onPress={signOut}
             >
-                <Text>Logout</Text>
+                <Text>Sair</Text>
             </TouchableOpacity>
         </SafeAreaView>
     )
@@ -86,7 +86,9 @@ const styles = StyleSheet.create({
         color: "#000",
         textAlign: 'center',
         fontSize: 18,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        borderWidth: 1,
+        borderColor: "#D3D3D3"
     },
     button: {
         width: '90%',

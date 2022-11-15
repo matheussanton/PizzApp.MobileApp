@@ -6,11 +6,13 @@ import {
     TouchableOpacity,
     TextInput,
     ActivityIndicator,
-    Modal
+    Modal,
+    FlatList
 } from 'react-native';
 import { ModalPicker } from '../../components/ModalPicker'
 import { api } from '../../services/api'
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native'
+import { ListItem } from '../../components/ListItem'
 
 import { Feather } from '@expo/vector-icons'
 
@@ -28,17 +30,36 @@ export type CategoryProps = {
     name: string;
 }
 
+export type ProductProps = {
+    id: string;
+    name: string;
+}
+
+type ItemProps = {
+    id: string;
+    productId: string;
+    name: string;
+    amount: string | number;
+}
+
 export default function Order() {
 
     const route = useRoute<OrderRouteProps>();
     const navigation = useNavigation();
 
     const [categoryList, setCategoryList] = useState<CategoryProps[] | []>([]);
-    const [categorySelected, setCategorySelected] = useState<CategoryProps>();
-
-    const [amout, setAmount] = useState('1');
-
+    const [categorySelected, setCategorySelected] = useState<CategoryProps | undefined>();
     const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
+
+    const [productList, setProductList] = useState<ProductProps[] | []>([]);
+    const [productSelected, setProductSelected] = useState<ProductProps | undefined>();
+    const [modalProductVisible, setModalProductVisible] = useState(false);
+
+
+    const [amount, setAmount] = useState('1');
+
+    const [items, setItems] = useState<ItemProps[] | []>([]);
+
 
     useEffect(() => {
         async function loadCategories() {
@@ -48,7 +69,6 @@ export default function Order() {
                     let data = res.data;
                     setCategoryList(data);
                     setCategorySelected(data[0]);
-
                 })
                 .catch((err) => {
                     console.log(err);
@@ -58,6 +78,53 @@ export default function Order() {
 
         loadCategories();
     }, [])
+
+    useEffect(() => {
+
+        async function loadCategoryItems() {
+
+            await api.get('/product/by-category', {
+                params: {
+                    categoryId: categorySelected?.id
+                }
+            })
+                .then((res) => {
+                    setProductList(res.data);
+                    setProductSelected(res.data[0]);
+
+                    console.log(res.data[0]);
+
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+
+        }
+
+        loadCategoryItems()
+
+    }, [categorySelected]);
+
+    // Adicionar um item na mesa
+    async function handleAddItemToList() {
+        const response = await api.post('/orderItem', {
+            orderId: route.params?.orderId,
+            productId: productSelected?.id,
+            amount: Number(amount)
+        })
+
+        let { id } = response?.data;
+
+        let data = {
+            id: id,
+            productId: productSelected?.id as string,
+            name: productSelected?.name as string,
+            amount: amount
+        }
+
+        setItems(allItems => [...allItems, data]);
+
+    }
 
     async function handleCloseOrder() {
 
@@ -106,9 +173,18 @@ export default function Order() {
             )
             }
 
-            <TouchableOpacity style={styles.comboBox}>
-                <Text>Pizza de calabresa</Text>
-            </TouchableOpacity>
+            {productList.length != 0 ? (
+                <TouchableOpacity
+                    style={styles.comboBox}
+                    onPress={() => setModalProductVisible(true)}>
+                    <Text>
+                        {productSelected?.name}
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                < ActivityIndicator size={25} color="#000" />
+            )
+            }
 
             <View style={styles.qtdContainer}>
                 <Text style={styles.qtdText}>Quantidade</Text>
@@ -116,20 +192,32 @@ export default function Order() {
                     style={[styles.comboBox, { width: '60%', textAlign: 'center' }]}
                     placeholder="Ex.: 1"
                     keyboardType={"numeric"}
-                    value={amout}
+                    value={amount}
                     onChangeText={setAmount}
                 />
             </View>
 
             <View style={styles.actions}>
-                <TouchableOpacity style={styles.buttonAdd}>
+                <TouchableOpacity style={styles.buttonAdd}
+                    onPress={handleAddItemToList}>
                     <Text style={styles.buttonText}>+</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity
+                    style={[styles.button, { opacity: items.length === 0 ? 0.5 : 1 }]}
+                    disabled={items.length === 0}
+                >
                     <Text style={styles.buttonText}>Finalizar</Text>
                 </TouchableOpacity>
             </View>
+
+            <FlatList
+                showsVerticalScrollIndicator={false}
+                style={{ flex: 1, marginTop: 24 }}
+                data={items}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => <ListItem data={item} />}
+            />
 
 
             <Modal
@@ -141,6 +229,19 @@ export default function Order() {
                     handleCloseModal={() => setModalCategoryVisible(false)}
                     options={categoryList}
                     selectedItem={(item) => { setCategorySelected(item) }}
+                />
+            </Modal>
+
+
+            <Modal
+                transparent={true}
+                visible={modalProductVisible}
+                animationType="fade"
+            >
+                <ModalPicker
+                    handleCloseModal={() => setModalProductVisible(false)}
+                    options={productList}
+                    selectedItem={(item) => { setProductSelected(item) }}
                 />
             </Modal>
 
@@ -174,7 +275,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         color: "#000",
         justifyContent: 'center',
-        fontSize: 20
+        fontSize: 20,
+        borderWidth: 1,
+        borderColor: "#D3D3D3"
     },
     qtdContainer: {
         flexDirection: 'row',
@@ -195,7 +298,7 @@ const styles = StyleSheet.create({
     },
     buttonAdd: {
         borderRadius: 4,
-        backgroundColor: '#3fd1ff',
+        backgroundColor: '#4DB023',
         height: 40,
         justifyContent: "center",
         alignItems: "center",
