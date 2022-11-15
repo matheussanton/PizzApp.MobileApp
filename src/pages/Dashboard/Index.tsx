@@ -23,10 +23,16 @@ export default function Dashboard() {
     async function openOrder() {
         if (table === '') return;
 
+        const reponse = await api.post('/order', {
+            table: Number(table)
+        })
+
         navigation.navigate('Order', {
             table: table,
-            orderId: "be7fff1f-ff32-46cf-a6ac-cb15af8a7764"
+            orderId: reponse.data.id
         });
+
+        setTable('');
     }
 
     return (
