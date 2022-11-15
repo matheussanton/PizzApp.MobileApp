@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     View,
     Text,
@@ -13,10 +13,14 @@ import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { StackParamList } from '../../routes/app.routes'
 
+import { AuthContext } from '../../contexts/AuthContext'
+
 
 export default function Dashboard() {
 
     const navigation = useNavigation<NativeStackNavigationProp<StackParamList>>();
+
+    const { signOut } = useContext(AuthContext);
 
     const [table, setTable] = useState('');
 
@@ -49,6 +53,13 @@ export default function Dashboard() {
                 onPress={openOrder}
             >
                 <Text style={styles.buttonText}>Abrir mesa</Text>
+            </TouchableOpacity>
+
+
+            <TouchableOpacity style={styles.logoutLabel}
+                onPress={signOut}
+            >
+                <Text>Logout</Text>
             </TouchableOpacity>
         </SafeAreaView>
     )
@@ -88,5 +99,9 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    logoutLabel: {
+        position: 'absolute',
+        bottom: 40
     }
 })
