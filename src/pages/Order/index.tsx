@@ -126,6 +126,22 @@ export default function Order() {
 
     }
 
+    async function handleDeleteItem(itemId: string) {
+        await api.delete('/orderItem', {
+            params: {
+                orderItemId: itemId
+            }
+        });
+
+        //Após delete, remove item da lista
+
+        let newItemList = items.filter(item => {
+            return (item.id != itemId)
+        })
+
+        setItems(newItemList);
+    }
+
     async function handleCloseOrder() {
 
         try {
@@ -154,6 +170,8 @@ export default function Order() {
                     Mesa {route.params.table}
                 </Text>
                 <TouchableOpacity
+                    style={{ opacity: items.length > 0 ? 0.5 : 1 }}
+                    disabled={items.length > 0}
                     onPress={handleCloseOrder}
                 >
                     <Feather name="trash-2" size={28} color="#FF3F4b"></Feather>
@@ -216,7 +234,11 @@ export default function Order() {
                 style={{ flex: 1, marginTop: 24 }}
                 data={items}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => <ListItem data={item} />}
+                renderItem={({ item }) =>
+                    <ListItem
+                        data={item}
+                        deleteItem={handleDeleteItem}
+                    />}
             />
 
 
