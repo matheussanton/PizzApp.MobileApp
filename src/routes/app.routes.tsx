@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import Dashboard from '../pages/Dashboard';
 import Order from '../pages/Order';
+import FinishOrder from '../pages/FinishOrder';
 
 export type StackParamList = {
     Dashboard: undefined,
@@ -10,6 +11,10 @@ export type StackParamList = {
         table: number | string;
         orderId: string;
     },
+    FinishOrder: {
+        table: number | string;
+        orderId: string;
+    };
 }
 
 const Stack = createNativeStackNavigator<StackParamList>();
@@ -29,6 +34,11 @@ function AppRoutes() {
                 name="Order"
                 component={Order}
                 options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="FinishOrder"
+                component={FinishOrder}
+                options={{ headerShown: true }}
             />
         </Stack.Navigator>
     )

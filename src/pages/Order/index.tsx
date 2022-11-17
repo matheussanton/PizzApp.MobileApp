@@ -16,6 +16,9 @@ import { ListItem } from '../../components/ListItem'
 
 import { Feather } from '@expo/vector-icons'
 
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { StackParamList } from '../../routes/app.routes'
+
 type RouteDetailParams = {
     Order: {
         table: number | string;
@@ -45,7 +48,7 @@ type ItemProps = {
 export default function Order() {
 
     const route = useRoute<OrderRouteProps>();
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<StackParamList>>();
 
     const [categoryList, setCategoryList] = useState<CategoryProps[] | []>([]);
     const [categorySelected, setCategorySelected] = useState<CategoryProps | undefined>();
@@ -160,6 +163,13 @@ export default function Order() {
         }
     }
 
+    function handleFinishOrder() {
+        navigation.navigate("FinishOrder", {
+            table: route.params?.table,
+            orderId: route.params?.orderId
+        })
+    }
+
     return (
 
         <View style={styles.container}>
@@ -224,6 +234,7 @@ export default function Order() {
                 <TouchableOpacity
                     style={[styles.button, { opacity: items.length === 0 ? 0.5 : 1 }]}
                     disabled={items.length === 0}
+                    onPress={handleFinishOrder}
                 >
                     <Text style={styles.buttonText}>Finalizar</Text>
                 </TouchableOpacity>
