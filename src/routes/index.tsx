@@ -16,7 +16,7 @@ function Routes() {
             <View
                 style={{
                     flex: 1,
-                    backgroundColor: '#f5f7fb',
+                    backgroundColor: '#f2f2f2',
                     justifyContent: 'center',
                     alignItems: 'center'
                 }}>

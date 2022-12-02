@@ -31,11 +31,13 @@ type OrderRouteProps = RouteProp<RouteDetailParams, 'Order'>;
 export type CategoryProps = {
     id: string;
     name: string;
+    price: any;
 }
 
 export type ProductProps = {
     id: string;
     name: string;
+    price: string | undefined;
 }
 
 type ItemProps = {
@@ -43,6 +45,7 @@ type ItemProps = {
     productId: string;
     name: string;
     amount: string | number;
+    price: number;
 }
 
 export default function Order() {
@@ -62,6 +65,8 @@ export default function Order() {
     const [amount, setAmount] = useState('1');
 
     const [items, setItems] = useState<ItemProps[] | []>([]);
+
+    const [price, setPrice] = useState(0);
 
 
     useEffect(() => {
@@ -95,8 +100,6 @@ export default function Order() {
                     setProductList(res.data);
                     setProductSelected(res.data[0]);
 
-                    console.log(res.data[0]);
-
                 })
                 .catch(err => {
                     console.log(err);
@@ -108,6 +111,7 @@ export default function Order() {
 
     }, [categorySelected]);
 
+
     // Adicionar um item na mesa
     async function handleAddItemToList() {
         const response = await api.post('/orderItem', {
@@ -118,15 +122,16 @@ export default function Order() {
 
         let { id } = response?.data;
 
+        // let orderItemPrice = (productSelected * amount);
         let data = {
             id: id,
             productId: productSelected?.id as string,
             name: productSelected?.name as string,
-            amount: amount
+            amount: amount,
+            price: (parseInt(productSelected?.price) * parseInt(amount))
         }
 
         setItems(allItems => [...allItems, data]);
-
     }
 
     async function handleDeleteItem(itemId: string) {
@@ -164,10 +169,17 @@ export default function Order() {
     }
 
     function handleFinishOrder() {
+        let totalPrice = 0;
+        items.map((item) => {
+            totalPrice += item.price;
+        });
+
         navigation.navigate("FinishOrder", {
             table: route.params?.table,
-            orderId: route.params?.orderId
-        })
+            orderId: route.params?.orderId,
+            totalPrice: totalPrice
+        });
+
     }
 
     return (
